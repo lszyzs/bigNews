@@ -13,6 +13,8 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 引入分页插件 -->
+    <script src="./06-pagination分页插件使用/jquery.twbsPagination.js"></script>
 </head>
 
 <body>
@@ -69,9 +71,74 @@
                 </tbody>
             </table>
             <div class="row text-center">
+                <ul id="pagination" class="pagination-sm"></ul>
             </div>
         </div>
     </div>
+    <script src="./libs/http.js"></script>
+ <script id="category" type="text/html">
+    <option value="">所有分类</option>
+    {{each data v}}
+    <option value={{v.id}}>{{v.name}}</option>
+    {{/each}}
+ </script>
+    <script id="page" type="text/html">
+        {{each data.data v}}
+        <tr>
+            <td>{{v.title}}</td>
+            <td>{{v.author}}</td>
+            <td>{{v.category}}</td>
+            <td class="text-center">{{v.date}}</td>
+            <td class="text-center">{{v.state}}</td>
+            <td class="text-center">
+                <a href="article_edit.html" class="btn btn-default btn-xs" data-id ={{v.id}}>编辑</a>
+                <a href="javascript:void(0);" class="btn btn-danger btn-xs delete" data-id ={{v.id}}>删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+    <script>
+        // 入口函数
+        $(function () {
+        // 一开始就调用渲染函数
+        // 给文章种类添加赋值
+        $.ajax({
+            url:bigNews.category_list,
+            type:'get',
+            dataType:'json',
+            success: function(backData){
+        $('#selCategory').html(template('category',backData))
+            }
+        });
+        // 先进行一次渲染
+        function start(type,state,page) {
+            $.ajax({
+               url:bigNews.article_query,
+               type:'get',
+               dataType:'json',
+               data:{
+                  type:type,
+                state:state,
+                page:page,
+                perpage:10
+               },
+               success: function(backData){
+                console.log(backData);
+                var res = template('page', backData)
+               $('tbody').html(res)
+               }
+           });
+        }
+        start();
+        // 点筛选
+            $('#btnSearch').on('click',function (e) {
+                var page = $('#selCategory').val();
+                var state = $('#selStatus').val();
+                start(page,state,)
+                return false;
+            })
+        })
+    </script>
 </body>
 
 </html>

@@ -76,7 +76,6 @@
                 type: 'get',
                 dataType: 'json',
                 success: function (backData) {
-                    console.log(backData);
                     $('.user_pic').attr('src', backData.data.userPic)
                     for (var key in backData.data) {
                         // 用遍历对象解决代码冗余问题
