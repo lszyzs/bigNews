@@ -60,23 +60,124 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
                     <div class="col-sm-4">
+                        <!-- 日历插件导入 -->
+                        <div class="jeinpbox">
+                            <input type="text" class="jeinput" id="testico" placeholder="YYYY-MM-DD">
+                            <div class="icons jebtns"
+                                onclick="jeDate('#testico',{trigger:false,format: 'YYYY-MM-DD',theme:{bgcolor:'#D91680',pnColor:'#FF6653'},zIndex: 10001})">
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-success btn-edit">修改</button>
-                        <button type="submit" class="btn btn-default btn-draft">存为草稿</button>
-                    </div>
-                </div>
-            </form>
+                <!-- 日历插件end -->
         </div>
     </div>
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
+        <div class="col-sm-10">
+            <!-- wangEditor -->
+            <div id="editor"></div>
+        </div>
+        <!-- 富文本编辑器end -->
+    </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-success btn-edit">修改</button>
+            <button type="submit" class="btn btn-default btn-draft">存为草稿</button>
+        </div>
+    </div>
+    </form>
+    </div>
+    </div>
     <script src="./libs/http.js"></script>
+    <!-- 写文章类别的模板 -->
+    <script id="kind" type="text/html">
+        {{each data v}}
+        <option value={{v.id}}>{{v.name}}</option>
+        {{/each}}
+    </script>
+    <script>
+        // 入口函数
+        $(function () {
+            // 先拿到网页的id值
+            var id = window.location.search.split("=")[1];
+            // 先发送ajax请求拿到文章种类 在ajax请求发送页面显示的ajax请求
+            $.ajax({
+                url: bigNews.category_list,
+                type: 'get',
+                dataType: 'json',
+                data: '',
+                success: function (backData) {
+                    var res = template('kind', backData);
+                    $('.category').html(template('kind', backData))
+                }
+            });
+            // 根据id请求ajax文章数据回来
+            $.ajax({
+                url: bigNews.article_search,
+                type: 'get',
+                dataType: 'json',
+                data: {
+                    id: id
+                },
+                success: function (backData) {
+                    console.log(backData);
+                    //渲染页面
+                    $('.title').val(backData.data.title);
+                    $('.article_cover').attr('src', backData.data.cover);
+                    $('.category').val(backData.data.categoryId);
+                    $('#testico').val(backData.data.date);
+                    //注意点 ： editor需要在config.js文件中赋值给window，成为全局变量
+                    editor.txt.html(backData.data.content);
+                }
+            });
+            // 图片预览功能
+            //1.给file表单元素注册onchange事件
+            $('#inputCover').change(function () {
+                //1.2 获取用户选择的图片
+                var file = this.files[0];
+                //1.3 将文件转为src路径
+                var url = URL.createObjectURL(file);
+                //1.4 将url路径赋值给img标签的src
+                $('.article_cover').attr('src', url);
+            });
+            // 点击提交按钮事件
+            $('.btn-edit').click(function (e) {
+                e.preventDefault();
+                editArticle('已发布')
+            })
+            $('.btn-edit').click(function (e) {
+                e.preventDefault('草稿 ');
+
+            })
+            function editArticle(state) {
+                //创建FormData对象：参数是表单dom对象
+                // 创建表单对象是dom对象需要把jq转换
+                var fd = new FormData($("#form")[0]);
+                // from里面的对象满足不了接口文档参数 需要追加
+                // 设置input=hidden 适合少量
+                // 使用append 追加 适合大量参数
+                fd.append('id',id);
+                fd.append('date',$('#testico').val());
+                fd.append('state',state);
+                fd.append('content',editor.txt.html());
+                $.ajax({
+                    url: bigNews.article_edit,
+                    type: 'post',
+                    dataType: 'json',
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (backData) {
+                        console.log(backData);
+                        alert('修改成功');
+                        widow.location.href = './article_list.html'
+                    }
+                });
+            }
+        })
+    </script>
 </body>
 
 </html>
