@@ -82,6 +82,7 @@
     <option value={{v.id}}>{{v.name}}</option>
     {{/each}}
  </script>
+ 
     <script id="page" type="text/html">
         {{each data.data v}}
         <tr>
@@ -92,7 +93,7 @@
             <td class="text-center">{{v.state}}</td>
             <td class="text-center">
                 <a href="article_edit.html?id={{v.id}}" class="btn btn-default btn-xs" >编辑</a>
-                <a href="javascript:void(0);" class="btn btn-danger btn-xs delete" data-id ={{v.id}}>删除</a>
+                <a href="javascript:void(0);" class="btn btn-danger btn-xs delete" data-id ={{v.date}}>删除</a>
             </td>
         </tr>
         {{/each}}
@@ -171,6 +172,31 @@
                     }
                 });
             };
+            //删除文章 
+            $('.table>tbody').on('click','delete',function () {
+                var $id  = $(this).attr('data-id');
+                $.ajax({
+                    url:BigNew.article_delete,
+                    type:'post',
+                    dataType:'json',
+                    data:{id:id},
+                    success: function(backData){
+                        console.log(backData);
+                        if(backData.code == 204){
+                            alert('删除成功');
+                            //刷新页面
+                            window.location.reload();
+                        }
+                        
+                    }
+                });
+            })
+            // 发表文章
+            $('#release_btn').on('click',function () {
+                // 问题 如何在article_list.html中获取index.html的元素?
+                // $('选择器',window.parent.document):在父页面DOM树查询元素
+                $('.level02 li:eq(1)',window.parent.document).addClass('active').siblings().removeClass('active');
+            })
         });
     </script>
 </body>
